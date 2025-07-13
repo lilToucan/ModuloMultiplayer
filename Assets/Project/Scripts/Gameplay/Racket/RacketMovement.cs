@@ -14,8 +14,8 @@ public class RacketMovement : NetworkBehaviour
 
     #region Server
 
-    [Command]
-    private void CmdMove()
+    [Server]
+    private void Move()
     {
         // already checked isOwner 
 
@@ -34,23 +34,19 @@ public class RacketMovement : NetworkBehaviour
     [ClientCallback]
     private void Update()
     {
-        if (!isOwned || moveDir == Vector2.zero)
+        if (moveDir == Vector2.zero)
             return;
 
-        CmdMove();
+        Move();
     }
 
     internal void MovementPerformed(InputAction.CallbackContext context)
     {
-        if (!isOwned)
-            return;
         moveDir.y = context.ReadValue<float>();
     }
 
     internal void MovementCanceled(InputAction.CallbackContext context)
     {
-        if (!isOwned)
-            return;
         moveDir = Vector2.zero;
     }
 

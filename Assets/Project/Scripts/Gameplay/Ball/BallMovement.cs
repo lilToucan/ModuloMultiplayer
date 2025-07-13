@@ -1,9 +1,10 @@
 using Mirror;
+using System;
 using UnityEngine;
 
 [RequireComponent
     (typeof(NetworkIdentity),
-    typeof(Rigidbody2D),
+    typeof(NetworkRigidbodyReliable2D),
     typeof(NetworkTransformReliable))
 ]
 public class BallMovement : NetworkBehaviour
@@ -14,7 +15,7 @@ public class BallMovement : NetworkBehaviour
     [SerializeField]
     float bounceSpeedUp = 2;
 
-    [SerializeField, Range(0f,1f)]
+    [SerializeField, Range(0f, 1f)]
     float hitVelpercentage = 0.2f;
 
     float currentSpeed;
@@ -22,16 +23,15 @@ public class BallMovement : NetworkBehaviour
     Rigidbody2D rb;
 
     #region Server
-
     [Server]
-    public void StartGame(Vector2 direction)
+    public void ResetVelocity(Vector2 direction)
     {
         currentSpeed = startingSpeed;
         rb.linearVelocity = direction * currentSpeed;
     }
 
-    [Command]
-    void CmdBounce(Vector2 normal, Vector2 hitVelocity)
+    [Server]
+    void Bounce(Vector2 normal, Vector2 hitVelocity)
     {
         currentSpeed += bounceSpeedUp;
 
@@ -44,7 +44,6 @@ public class BallMovement : NetworkBehaviour
     #endregion
 
     #region Client
-
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -64,8 +63,12 @@ public class BallMovement : NetworkBehaviour
         if (collision.transform.TryGetComponent(out RacketMovement racket))
             hitVel = racket.currentVelocity;
 
-        CmdBounce(normal, hitVel);
+        Bounce(normal, hitVel);
     }
+
+    
+   
+
 
     #endregion
 }
